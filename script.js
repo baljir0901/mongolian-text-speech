@@ -12,10 +12,21 @@ class MongolianTextReader {
         this.setupEventListeners();
         this.loadVoices();
         
-        // Load voices when they become available
+        // Chrome optimization: Load voices when they become available
         if (speechSynthesis.onvoiceschanged !== undefined) {
-            speechSynthesis.onvoiceschanged = () => this.loadVoices();
+            speechSynthesis.onvoiceschanged = () => {
+                console.log('Voices changed event fired (Chrome compatibility)');
+                this.loadVoices();
+            };
         }
+        
+        // Additional Chrome compatibility: Force voice loading after delay
+        setTimeout(() => {
+            if (!this.mongolianVoice || this.synth.getVoices().length === 0) {
+                console.log('Forcing voice reload for Chrome compatibility');
+                this.loadVoices();
+            }
+        }, 500);
     }
 
     initializeElements() {
@@ -98,21 +109,33 @@ class MongolianTextReader {
         const voices = this.synth.getVoices();
         console.log('Available voices:', voices.map(v => `${v.name} (${v.lang})`));
         
-        // Try to find Mongolian or similar voices
-        this.mongolianVoice = voices.find(voice => 
-            voice.lang.toLowerCase().includes('mn') || 
-            voice.lang.toLowerCase().includes('mongolian')
-        );
-
-        // Fallback to English voices (works best for Mongolian pronunciation)
-        if (!this.mongolianVoice) {
-            this.mongolianVoice = voices.find(voice => 
-                voice.lang.toLowerCase().includes('en') // English works best for Mongolian
-            ) || voices[0];
-        }
+        // Chrome browser optimization - priority order
+        this.mongolianVoice = 
+            // First: Try Google voices (Chrome native, best quality)
+            voices.find(voice => 
+                voice.name.toLowerCase().includes('google') && 
+                (voice.lang.toLowerCase().startsWith('en-us') || voice.lang.toLowerCase().startsWith('en-gb'))
+            ) ||
+            // Second: Try any English US voice
+            voices.find(voice => 
+                voice.lang.toLowerCase() === 'en-us'
+            ) ||
+            // Third: Try any English voice
+            voices.find(voice => 
+                voice.lang.toLowerCase().startsWith('en')
+            ) ||
+            // Fourth: Try Mongolian voices if available
+            voices.find(voice => 
+                voice.lang.toLowerCase().includes('mn') || 
+                voice.lang.toLowerCase().includes('mongolian')
+            ) ||
+            // Fifth: Default voice
+            voices.find(voice => voice.default) ||
+            // Fallback: First available voice
+            voices[0];
 
         if (this.mongolianVoice) {
-            console.log('Selected voice:', this.mongolianVoice.name, this.mongolianVoice.lang);
+            console.log('Selected voice for Chrome:', this.mongolianVoice.name, this.mongolianVoice.lang);
         }
     }
 
@@ -135,18 +158,24 @@ class MongolianTextReader {
         // Create new utterance
         this.utterance = new SpeechSynthesisUtterance(text);
         
-        // Set voice if available
+        // Chrome browser optimizations
         if (this.mongolianVoice) {
             this.utterance.voice = this.mongolianVoice;
+            // Use the voice's native language if it's English
+            if (this.mongolianVoice.lang.toLowerCase().startsWith('en')) {
+                this.utterance.lang = this.mongolianVoice.lang;
+            } else {
+                this.utterance.lang = 'en-US';
+            }
+        } else {
+            // Fallback language for Chrome
+            this.utterance.lang = 'en-US';
         }
-        
-        // Set language to English for best Mongolian pronunciation
-        this.utterance.lang = 'en-US';
 
-        // Set properties from sliders
-        this.utterance.rate = parseFloat(this.speedSlider.value);
-        this.utterance.pitch = parseFloat(this.pitchSlider.value);
-        this.utterance.volume = parseFloat(this.volumeSlider.value);
+        // Set properties from sliders with Chrome-friendly values
+        this.utterance.rate = Math.max(0.1, Math.min(2.0, parseFloat(this.speedSlider.value)));
+        this.utterance.pitch = Math.max(0.1, Math.min(2.0, parseFloat(this.pitchSlider.value)));
+        this.utterance.volume = Math.max(0.0, Math.min(1.0, parseFloat(this.volumeSlider.value)));
 
         // Set up event handlers
         this.utterance.onstart = () => {
@@ -820,13 +849,19 @@ class MongolianTextReader {
 
     createSimpleAudioFile(text) {
         try {
-            // Create a basic WAV file for Edge browser compatibility
-            const duration = Math.max(text.length * 0.12, 3); // Better duration estimate
+            // Chrome browser optimization for audio file creation
+            const duration = Math.max(text.length * 0.10, 2); // Optimized duration for Chrome
             const sampleRate = 44100; // Standard sample rate
             const length = Math.floor(sampleRate * duration);
             
-            // Create offline audio context for better compatibility
+            // Chrome compatibility - prefer AudioContext over OfflineAudioContext
             const OfflineAudioContext = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+            if (!OfflineAudioContext) {
+                console.error('OfflineAudioContext not supported');
+                this.createTextDownload(text);
+                return;
+            }
+            
             const audioContext = new OfflineAudioContext(1, length, sampleRate);
             
             // Create a simple but pleasant audio pattern
