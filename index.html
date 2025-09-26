@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎧 Монгол хэл унших - Mongolian Text Reader</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎧 Монгол хэл унших</h1>
+            <p>✨ Монгол бичвэрийг дуудуулж унших хөгжүүлэлт ✨</p>
+        </header>
+
+        <main>
+            <div class="input-section">
+                <label for="mongolianText">📝 Монгол текст оруулна уу:</label>
+                <textarea 
+                    id="mongolianText" 
+                    placeholder="Энд монгол текстээ бичнэ үү..."
+                    rows="8"
+                ></textarea>
+            </div>
+
+            <div class="controls">
+                <button id="playBtn" class="btn primary">
+                    <span class="icon">▶️</span>
+                    Унших
+                </button>
+                <button id="pauseBtn" class="btn secondary" disabled>
+                    <span class="icon">⏸️</span>
+                    Зогсоох
+                </button>
+                <button id="stopBtn" class="btn secondary" disabled>
+                    <span class="icon">⏹️</span>
+                    Дуусгах
+                </button>
+                <button id="clearBtn" class="btn tertiary">
+                    <span class="icon">🗑️</span>
+                    Цэвэрлэх
+                </button>
+            </div>
+
+            <div class="settings">
+                <div class="setting-group">
+                    <label for="speed">Хурд:</label>
+                    <input type="range" id="speed" min="0.5" max="2" step="0.1" value="1">
+                    <span id="speedValue">1.0x</span>
+                </div>
+                
+                <div class="setting-group">
+                    <label for="pitch">Өндөр:</label>
+                    <input type="range" id="pitch" min="0.5" max="2" step="0.1" value="1">
+                    <span id="pitchValue">1.0</span>
+                </div>
+
+                <div class="setting-group">
+                    <label for="volume">Дуу:</label>
+                    <input type="range" id="volume" min="0" max="1" step="0.1" value="1">
+                    <span id="volumeValue">100%</span>
+                </div>
+            </div>
+
+            <div class="status" id="status">
+                Бэлэн байна
+            </div>
+
+            <div class="sample-texts">
+                <h3>📚 Жишээ текстүүд:</h3>
+                <div class="samples">
+                    <button class="sample-btn" data-text="Сайн байна уу? Та яаж байна?">
+                        👋 Мэндчилгээ
+                    </button>
+                    <button class="sample-btn" data-text="Монгол улс манай эх орон юм. Би монгол хүн.">
+                        🏛️ Эх орон
+                    </button>
+                    <button class="sample-btn" data-text="Өнөөдөр сайхан өдөр байна. Нар тод, тэнгэр цэнхэр байна.">
+                        🌤️ Цаг агаар
+                    </button>
+                    <button class="sample-btn" data-text="Номын сан руу явж ном уншина. Их сургуульд суралцана.">
+                        🎓 Боловсрол
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>🚀 Монгол хэлний текст унших програм | 2025 ⭐</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

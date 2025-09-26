@@ -1,0 +1,38 @@
+{
+  "name": "mongolian-text-reader",
+  "version": "1.0.0",
+  "description": "A beautiful web application for reading Mongolian text aloud using Web Speech API",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "dev": "live-server .",
+    "build": "echo 'No build process needed for static files'",
+    "test": "echo 'No tests specified'"
+  },
+  "keywords": [
+    "mongolian",
+    "text-to-speech",
+    "speech-synthesis",
+    "web-speech-api",
+    "mongolian-language",
+    "accessibility",
+    "voice",
+    "audio"
+  ],
+  "author": "AI Assistant",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/username/mongolian-text-reader.git"
+  },
+  "homepage": "https://username.github.io/mongolian-text-reader",
+  "bugs": {
+    "url": "https://github.com/username/mongolian-text-reader/issues"
+  },
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
