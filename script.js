@@ -109,49 +109,59 @@ class MongolianTextReader {
         const voices = this.synth.getVoices();
         console.log('Available voices:', voices.map(v => `${v.name} (${v.lang})`));
         
-        // Mongolian-friendly voice selection - better pronunciation
+        // Mongolian voice selection - prioritize Google Bataa and Mongolian voices
         this.mongolianVoice = 
-            // First: Female English voices (better for Mongolian pronunciation)
+            // First: Google Bataa (Mongolian male voice - BEST for Mongolian!)
             voices.find(voice => 
-                voice.name.toLowerCase().includes('female') && 
-                voice.lang.toLowerCase().startsWith('en')
+                voice.name.toLowerCase().includes('bataa') ||
+                (voice.name.toLowerCase().includes('google') && 
+                 voice.lang.toLowerCase().includes('mn'))
             ) ||
-            // Second: Google US English Female voices
+            // Second: Any Mongolian language voices
+            voices.find(voice => 
+                voice.lang.toLowerCase().includes('mn') || 
+                voice.lang.toLowerCase().includes('mongolian') ||
+                voice.lang.toLowerCase().includes('mn-mn')
+            ) ||
+            // Third: Google voices with Mongolian support
             voices.find(voice => 
                 voice.name.toLowerCase().includes('google') && 
-                voice.name.toLowerCase().includes('female') &&
-                voice.lang.toLowerCase().startsWith('en-us')
+                (voice.name.toLowerCase().includes('mongolian') ||
+                 voice.name.toLowerCase().includes('mongol'))
             ) ||
-            // Third: Microsoft voices (good pronunciation)
+            // Fourth: Any Google voice (as fallback)
+            voices.find(voice => 
+                voice.name.toLowerCase().includes('google')
+            ) ||
+            // Fifth: Microsoft voices (good pronunciation)
             voices.find(voice => 
                 voice.name.toLowerCase().includes('zira') || // Microsoft Zira - female
                 voice.name.toLowerCase().includes('hazel') || // Microsoft Hazel - female  
                 voice.name.toLowerCase().includes('aria')    // Microsoft Aria - natural
             ) ||
-            // Fourth: Any natural sounding English voice
+            // Sixth: Female English voices (better for Mongolian pronunciation)
             voices.find(voice => 
-                (voice.name.toLowerCase().includes('natural') || 
-                 voice.name.toLowerCase().includes('neural')) &&
+                voice.name.toLowerCase().includes('female') && 
                 voice.lang.toLowerCase().startsWith('en')
             ) ||
-            // Fifth: Default English US voice
+            // Seventh: Default English US voice
             voices.find(voice => 
                 voice.lang.toLowerCase() === 'en-us'
-            ) ||
-            // Sixth: Any English voice
-            voices.find(voice => 
-                voice.lang.toLowerCase().startsWith('en')
-            ) ||
-            // Seventh: Try Mongolian voices if available
-            voices.find(voice => 
-                voice.lang.toLowerCase().includes('mn') || 
-                voice.lang.toLowerCase().includes('mongolian')
             ) ||
             // Fallback: First available voice
             voices[0];
 
         if (this.mongolianVoice) {
-            console.log('Selected Mongolian-friendly voice:', this.mongolianVoice.name, this.mongolianVoice.lang);
+            console.log('🎵 Selected voice:', this.mongolianVoice.name, this.mongolianVoice.lang);
+            if (this.mongolianVoice.name.toLowerCase().includes('bataa')) {
+                console.log('🇲🇳 Google Bataa олдлоо - монгол хэлний төрөлх дуу!');
+            } else if (this.mongolianVoice.lang.toLowerCase().includes('mn')) {
+                console.log('🇲🇳 Монгол хэлний дуу олдлоо!');
+            } else {
+                console.log('🌍 Англи хэлний дуу ашиглаж байна (монгол хэлэнд тохирсон)');
+            }
+        } else {
+            console.log('❌ Дуу олдсонгүй!');
         }
     }
 
@@ -171,24 +181,32 @@ class MongolianTextReader {
         // Stop any current speech
         this.synth.cancel();
         
-        // Improve Mongolian pronunciation
-        text = this.improveMongolianPronunciation(text);
+        // Improve Mongolian pronunciation only if not using native Mongolian voice
+        if (this.mongolianVoice && 
+            !this.mongolianVoice.lang.toLowerCase().includes('mn') && 
+            !this.mongolianVoice.name.toLowerCase().includes('bataa')) {
+            text = this.improveMongolianPronunciation(text);
+        }
 
         // Create new utterance
         this.utterance = new SpeechSynthesisUtterance(text);
         
-        // Mongolian pronunciation optimization
+        // Mongolian pronunciation optimization - prioritize Mongolian language
         if (this.mongolianVoice) {
             this.utterance.voice = this.mongolianVoice;
-            // Use the voice's native language if it's English
-            if (this.mongolianVoice.lang.toLowerCase().startsWith('en')) {
-                this.utterance.lang = this.mongolianVoice.lang;
+            // Use Mongolian language if available, otherwise use voice's native language
+            if (this.mongolianVoice.lang.toLowerCase().includes('mn') || 
+                this.mongolianVoice.lang.toLowerCase().includes('mongolian')) {
+                this.utterance.lang = this.mongolianVoice.lang; // Use Mongolian language
+                console.log('Using Mongolian language setting:', this.mongolianVoice.lang);
+            } else if (this.mongolianVoice.lang.toLowerCase().startsWith('en')) {
+                this.utterance.lang = this.mongolianVoice.lang; // Use English for pronunciation
             } else {
-                this.utterance.lang = 'en-US';
+                this.utterance.lang = 'mn-MN'; // Force Mongolian if possible
             }
         } else {
-            // Fallback language optimized for Mongolian
-            this.utterance.lang = 'en-US';
+            // Fallback: try Mongolian first, then English
+            this.utterance.lang = 'mn-MN';
         }
 
         // Mongolian-optimized voice parameters
