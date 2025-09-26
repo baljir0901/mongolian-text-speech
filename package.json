@@ -6,7 +6,6 @@
   "scripts": {
     "start": "python -m http.server 8000",
     "dev": "live-server .",
-    "build": "echo 'No build process needed for static files'",
     "test": "echo 'No tests specified'"
   },
   "keywords": [
