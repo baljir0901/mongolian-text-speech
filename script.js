@@ -109,38 +109,54 @@ class MongolianTextReader {
         const voices = this.synth.getVoices();
         console.log('Available voices:', voices.map(v => `${v.name} (${v.lang})`));
         
-        // Chrome browser optimization - priority order
+        // Mongolian-friendly voice selection - better pronunciation
         this.mongolianVoice = 
-            // First: Try Google voices (Chrome native, best quality)
+            // First: Female English voices (better for Mongolian pronunciation)
+            voices.find(voice => 
+                voice.name.toLowerCase().includes('female') && 
+                voice.lang.toLowerCase().startsWith('en')
+            ) ||
+            // Second: Google US English Female voices
             voices.find(voice => 
                 voice.name.toLowerCase().includes('google') && 
-                (voice.lang.toLowerCase().startsWith('en-us') || voice.lang.toLowerCase().startsWith('en-gb'))
+                voice.name.toLowerCase().includes('female') &&
+                voice.lang.toLowerCase().startsWith('en-us')
             ) ||
-            // Second: Try any English US voice
+            // Third: Microsoft voices (good pronunciation)
+            voices.find(voice => 
+                voice.name.toLowerCase().includes('zira') || // Microsoft Zira - female
+                voice.name.toLowerCase().includes('hazel') || // Microsoft Hazel - female  
+                voice.name.toLowerCase().includes('aria')    // Microsoft Aria - natural
+            ) ||
+            // Fourth: Any natural sounding English voice
+            voices.find(voice => 
+                (voice.name.toLowerCase().includes('natural') || 
+                 voice.name.toLowerCase().includes('neural')) &&
+                voice.lang.toLowerCase().startsWith('en')
+            ) ||
+            // Fifth: Default English US voice
             voices.find(voice => 
                 voice.lang.toLowerCase() === 'en-us'
             ) ||
-            // Third: Try any English voice
+            // Sixth: Any English voice
             voices.find(voice => 
                 voice.lang.toLowerCase().startsWith('en')
             ) ||
-            // Fourth: Try Mongolian voices if available
+            // Seventh: Try Mongolian voices if available
             voices.find(voice => 
                 voice.lang.toLowerCase().includes('mn') || 
                 voice.lang.toLowerCase().includes('mongolian')
             ) ||
-            // Fifth: Default voice
-            voices.find(voice => voice.default) ||
             // Fallback: First available voice
             voices[0];
 
         if (this.mongolianVoice) {
-            console.log('Selected voice for Chrome:', this.mongolianVoice.name, this.mongolianVoice.lang);
+            console.log('Selected Mongolian-friendly voice:', this.mongolianVoice.name, this.mongolianVoice.lang);
         }
     }
 
     playText() {
-        const text = this.textArea.value.trim();
+        let text = this.textArea.value.trim();
         
         if (!text) {
             this.updateStatus('Текст оруулна уу!', 'error');
@@ -154,11 +170,14 @@ class MongolianTextReader {
 
         // Stop any current speech
         this.synth.cancel();
+        
+        // Improve Mongolian pronunciation
+        text = this.improveMongolianPronunciation(text);
 
         // Create new utterance
         this.utterance = new SpeechSynthesisUtterance(text);
         
-        // Chrome browser optimizations
+        // Mongolian pronunciation optimization
         if (this.mongolianVoice) {
             this.utterance.voice = this.mongolianVoice;
             // Use the voice's native language if it's English
@@ -168,14 +187,26 @@ class MongolianTextReader {
                 this.utterance.lang = 'en-US';
             }
         } else {
-            // Fallback language for Chrome
+            // Fallback language optimized for Mongolian
             this.utterance.lang = 'en-US';
         }
 
-        // Set properties from sliders with Chrome-friendly values
-        this.utterance.rate = Math.max(0.1, Math.min(2.0, parseFloat(this.speedSlider.value)));
-        this.utterance.pitch = Math.max(0.1, Math.min(2.0, parseFloat(this.pitchSlider.value)));
-        this.utterance.volume = Math.max(0.0, Math.min(1.0, parseFloat(this.volumeSlider.value)));
+        // Mongolian-optimized voice parameters
+        let rate = parseFloat(this.speedSlider.value);
+        let pitch = parseFloat(this.pitchSlider.value);
+        let volume = parseFloat(this.volumeSlider.value);
+        
+        // Adjust for better Mongolian pronunciation
+        if (rate < 0.7) {
+            rate = Math.max(0.7, rate); // Not too slow for clarity
+        }
+        if (pitch > 1.3) {
+            pitch = Math.min(1.3, pitch); // Not too high for natural sound
+        }
+        
+        this.utterance.rate = Math.max(0.5, Math.min(1.5, rate));
+        this.utterance.pitch = Math.max(0.8, Math.min(1.4, pitch));
+        this.utterance.volume = Math.max(0.0, Math.min(1.0, volume));
 
         // Set up event handlers
         this.utterance.onstart = () => {
@@ -958,7 +989,73 @@ class MongolianTextReader {
         this.downloadBtn.setAttribute('data-audio-url', textUrl);
         this.downloadBtn.setAttribute('data-is-text', 'true');
         
-        this.updateStatus('📄 Текст файл бэлэн болсон - Татаж авах боломжтой!', 'speaking');
+                this.updateStatus('📄 Текст файл бэлэн болсон - Татаж авах боломжтой!', 'speaking');
+    }
+
+    improveMongolianPronunciation(text) {
+        // Common Mongolian words pronunciation improvements
+        const mongolianWords = {
+            // Greetings and common phrases
+            'сайн уу': 'сай-н уу',
+            'сайн байна уу': 'сай-н бай-на уу', 
+            'баярлалаа': 'ба-яр-ла-лаа',
+            'баяртай': 'ба-яр-тай',
+            'уучлаарай': 'уу-чла-арай',
+            'тийм': 'ти-йм',
+            'үгүй': 'үү-гү-й',
+            
+            // Numbers
+            'нэг': 'н-эг',
+            'хоёр': 'хо-ёр', 
+            'гурав': 'гу-рав',
+            'дөрөв': 'дө-рөв',
+            'тав': 'та-в',
+            'зургаа': 'зур-гаа',
+            'долоо': 'до-лоо',
+            'найм': 'най-м',
+            'ес': 'е-с',
+            'арав': 'а-рав',
+            
+            // Family terms
+            'ээж': 'ээ-ж',
+            'аав': 'аа-в',
+            'ах': 'а-х',
+            'эгч': 'эг-ч',
+            'дүү': 'дү-ү',
+            
+            // Time
+            'өнөөдөр': 'ө-нөө-дөр',
+            'маргааш': 'мар-гаа-ш',
+            'өчигдөр': 'ө-чиг-дөр',
+            'цаг': 'ца-г',
+            'минут': 'ми-нут',
+            
+            // Common words
+            'монгол': 'мон-гол',
+            'хэл': 'хэ-л',
+            'бичиг': 'би-чиг',
+            'ном': 'но-м',
+            'сургууль': 'сур-гуу-ль',
+            'гэр': 'гэ-р',
+            'морь': 'мо-рь',
+            'хонь': 'хо-нь'
+        };
+        
+        // Replace common words with pronunciation-friendly versions
+        let improvedText = text;
+        for (const [mongolian, pronunciation] of Object.entries(mongolianWords)) {
+            const regex = new RegExp(mongolian, 'gi');
+            improvedText = improvedText.replace(regex, pronunciation);
+        }
+        
+        // Add pauses for better flow
+        improvedText = improvedText.replace(/([.!?])/g, '$1, ');
+        improvedText = improvedText.replace(/([,;:])/g, '$1 ');
+        
+        console.log('Original text:', text);
+        console.log('Improved pronunciation:', improvedText);
+        
+        return improvedText;
     }
 
     generateSimpleAudio(text) {
