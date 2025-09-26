@@ -259,6 +259,21 @@ main::before {
     background-position: 100% 100%;
 }
 
+.btn.download {
+    background: linear-gradient(135deg, #9c27b0, #673ab7, #9c27b0);
+    background-size: 200% 200%;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.btn.download:hover:not(:disabled) {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 
+        0 15px 40px rgba(156, 39, 176, 0.3),
+        0 0 0 1px rgba(255,255,255,0.1);
+    background-position: 100% 100%;
+}
+
 /* Settings */
 .settings {
     background: rgba(255, 255, 255, 0.1);
@@ -298,10 +313,12 @@ main::before {
     background: rgba(255, 255, 255, 0.3);
     outline: none;
     -webkit-appearance: none;
+    appearance: none;
 }
 
 .setting-group input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
+    appearance: none;
     width: 20px;
     height: 20px;
     border-radius: 50%;
@@ -381,6 +398,31 @@ main::before {
 @keyframes speakingPulse {
     0%, 100% { box-shadow: 0 8px 25px rgba(0,0,0,0.1), 0 0 0 0 rgba(76, 175, 80, 0.4); }
     50% { box-shadow: 0 8px 25px rgba(0,0,0,0.1), 0 0 0 10px rgba(76, 175, 80, 0); }
+}
+
+/* Info box */
+.info-box {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 25px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.info-box h4 {
+    color: rgba(255, 255, 255, 0.95);
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.info-box p {
+    color: rgba(255, 255, 255, 0.8);
+    margin: 8px 0;
+    font-size: 0.9rem;
+    line-height: 1.5;
 }
 
 .status.error {
